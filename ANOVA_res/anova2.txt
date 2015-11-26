@@ -1,0 +1,11 @@
+Call:
+   aov(formula = rtST ~ fading_factor + angle_factor + sound_factor)
+
+Terms:
+                fading_factor angle_factor sound_factor Residuals
+Sum of Squares       916.1513       0.3714       0.0177  366.6358
+Deg. of Freedom             2            2            1      5061
+
+Residual standard error: 0.269153
+1 out of 7 effects not estimable
+Estimated effects may be unbalanced
