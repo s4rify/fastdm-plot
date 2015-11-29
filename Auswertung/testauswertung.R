@@ -42,6 +42,9 @@ for (i in seq_along(all_files)) {
   
   # add subject row to identify subjects in the analysis
   data[[i]]$subject <- i
+  
+  # add trialidentifier to data
+  data[[i]]$trialnumber <-seq.int(nrow(data[[i]]))
 }
 
 ## overall sum of trials with timeouts
@@ -63,6 +66,7 @@ DATA <- rbind.fill(data)
 rtPT <- DATA$reactionTime_PT
 rtST <- DATA$reaction_time_ST
 corr <- DATA$correct
+
 fading_factor <- factor(DATA$fading_function) 
 angle_factor <- factor (DATA$LEDangle)
 levels(angle_factor) <- c("periphery", "no_light", "central", "periphery")
@@ -100,8 +104,8 @@ anova_summary <- summary(an1)
 # but now group level variables are specified using a special syntax:
 #  (1|subject) tells lmer to fit a linear model with a varying-intercept group effect using the variable subject  .
 library(lme4)
-lmm <- lmer(rtPT ~ DATA$fading_function*DATA$LEDangle *DATA$sound + (1| DATA$subject ), data=DATA)
-lmm1 <- lmer(rtPT ~ fading_factor + angle_factor + sound_factor + (1|subject_factor), data=DATA)
+lmm <- lmer(rtPT ~ fading_factor + angle_factor  + sound_factor + (1| DATA$trialnumber ), data=DATA)
+lmm1 <- lmer(rtPT ~ fading_factor + angle_factor + sound_factor + (1|subject_factor) + (1|DATA$trialnumber), data=DATA)
 
 
 ###########
@@ -131,7 +135,7 @@ coefplot(linear_model)
 
 ## qq plot for random effects
 library(sjPlot)
-sjp.glmer(lmm, type = "re.qq")
+sjp.glmer(lmm1, type = "re.qq")
 
 sjp.glmer(lmm1, 
           facet.grid = FALSE, 
@@ -144,7 +148,11 @@ sjp.glmer(lmm1,
           facet.grid = FALSE)
 
 ## plot random effects
-sjp.lmer(lmm1)
+sjp.lmer(lmm)
+
+sjp.glmer(lmm,
+          type = "ri.pc",
+          show.se = TRUE)
 
 
 ###########
