@@ -6,7 +6,7 @@
 
 ## This script expects to find a subfolder containing the .csv files relative to the working directory
 #csv_path <- "./csvfiles"
-csv_path <- "."
+csv_path <- "./csvfiles"
 
 anova_output_path <- "./ANOVA_results"
 
@@ -59,46 +59,58 @@ DATA <- rbind.fill(data)
 #
 ########################################################################################
 
-###########
-##
-## Within subject ANOVA with error term
-##
-##
-
-# is it ok to have one EV and one error term in one anova??
-# 1.0.1. change levels for fading factor
-# 1.1. look for interdependencies of factors!
-# 3. do tukey test 
-# 4. plot results
-
-## get fields for analysis
+## transform variables into factors for the ANOVa
 rtPT <- DATA$reactionTime_PT
 rtST <- DATA$reaction_time_ST
 corr <- DATA$correct
-
-## transform variables into factors for the ANOVa
 fading_factor <- factor(DATA$fading_function) 
 angle_factor <- factor (DATA$LEDangle)
+levels(angle_factor) <- c("periphery", "no_light", "central", "periphery")
+# angle is only looked at with two possibilities IF light was presented: central and periphery
 sound_factor <- factor(DATA$sound)
+# subject must be a factor for a within subject anova
+subject_factor <- factor(DATA$subject)
+
+#############
+##
+## estimate a simple linear model
+##
+library(arm)
+linear_model <- lm( rtPT ~  fading_factor*angle_factor*sound_factor)
+coef(linear_model)
 
 ############
 ## ANOVA 
-an1 <-aov(rtPT ~  fading_factor + Error(DATA$subject/fading_factor))
-an1.1 <- aov(rtPT ~ angle_factor + Error(DATA$subject/angle_factor))
-an1.2 <- aov(rtPT ~ sound_factor + Error(DATA$subject/sound_factor))
-aov.ex4=aov(Recall~(Task*Valence)+Error(Subject/(Task*Valence)),data.ex4 )
+## three way within subject anova
+## appearently this model is not appripriate bc we get "Error() is singular" warning. So we need a another model
+an1 <- aov(   rtPT ~  fading_factor*angle_factor*sound_factor + Error(DATA$subject/(fading_factor*angle_factor*sound_factor))   )
+an3 <- anova(linear_model)
 
-an2 <- aov(rtST ~ fading_factor + angle_factor + sound_factor)
-an3 <- aov(corr ~ fading_factor + angle_factor + sound_factor)
-
-#> aov.out = aov(price ~ store + Error(subject/store), data=groceries2)
-
+############
 ##
 ## provide summary as output
 ## 
-summary_an1 <- summary(aov(rtPT ~  fading_factor + angle_factor + sound_factor))
-summary_an2 <- summary(aov(rtST ~ fading_factor + angle_factor + sound_factor))
-summary_an3 <- summary(aov(corr ~ fading_factor + angle_factor + sound_factor))
+anova_summary <- summary(an1)
+
+############
+## find out that our model is BS and fit a linear mixed model instead
+##
+##
+# We use the lmer function with the familiar formula interface, 
+# but now group level variables are specified using a special syntax:
+#  (1|subject) tells lmer to fit a linear model with a varying-intercept group effect using the variable subject  .
+library(lme4)
+lmm <- lmer(rtPT ~ DATA$fading_function*DATA$LEDangle *DATA$sound + (1| DATA$subject ), data=DATA)
+lmm1 <- lmer(rtPT ~ fading_factor + angle_factor + sound_factor + (1|subject_factor), data=DATA)
+
+
+###########
+## 
+## Tukey Test
+##
+library(lmtest)
+t_test <- coeftest(linear_model)
+tukey_contrasts <- summary(glht(lmm1, linfct=mcp(fading_factor="Tukey")), test = adjusted(type = "bonferroni"))
 
 
 ###########
@@ -106,19 +118,45 @@ summary_an3 <- summary(aov(corr ~ fading_factor + angle_factor + sound_factor))
 ## Confidence Intervals
 ##
 ##
-
-# 1. compute confidence intervals
-# 2. plot them plus error bars
-
+CI_linear <- confint(linear_model)
+CI_linear_mixed <- confint(lmm)
 
 ###########
 ##
 ## Plot results
 ##
 ##
+library(arm)
+coefplot(linear_model)
+
+## qq plot for random effects
+library(sjPlot)
+sjp.glmer(lmm, type = "re.qq")
+
+sjp.glmer(lmm1, 
+          facet.grid = FALSE, 
+          sort = "sort.all")
+
+# plot probability curves for each covariate
+# grouped by random intercepts
+sjp.glmer(lmm1,
+          type = "ri.pc",
+          facet.grid = FALSE)
+
+## plot random effects
+sjp.lmer(lmm1)
 
 
+###########
+##
+## Find a model using the AIC!
+##
+library(stats4)
+fitted_model <- step(linear_model)
 
+## plot
+coefplot(fitted_model)
+t_test1 <- coeftest(fitted_model)
 
 
 ##
