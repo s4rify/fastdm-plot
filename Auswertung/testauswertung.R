@@ -31,6 +31,7 @@ for (i in seq_along(all_files)) {
 ##
 sum_timeouts <- vector(mode = 'numeric', length = length(all_files))
 
+
 for (i in seq_along(all_files)) {
   # remove all NaN values
   lines_to_rem <- which(grepl(NaN, data[[i]]$correct))
@@ -45,6 +46,8 @@ for (i in seq_along(all_files)) {
   
   # add trialidentifier to data
   data[[i]]$trialnumber <-seq.int(nrow(data[[i]]))
+  
+
 }
 
 ## overall sum of trials with timeouts
@@ -55,6 +58,12 @@ library(plyr)
 DATA <- rbind.fill(data)
 
 
+########
+##
+## Data Set diagnostics
+##
+timeout_rate <- (total_timeouts / 5067) *100
+error_rate <- (length(which(DATA$correct==0)) / 5067) *100
 
 ########################################################################################
 #
@@ -62,6 +71,66 @@ DATA <- rbind.fill(data)
 #
 ########################################################################################
 
+## check for normal distribution of response variable
+library(car)
+qqp(DATA$reactionTime_PT, "norm") # quantile comparison plot
+#response is exponentially distributed
+qqp(DATA$reactionTime_PT, "exp")
+
+## normalize reaction times through transformation
+normalized_RTPT <- log(DATA$reactionTime_PT)
+# confirm through plot
+qqnorm(normalized_RTPT) # nice!
+
+############
+## a linear mixed model with random effects, taken from paper Baayen et al
+## right handed side: random effects (slope | intercept)
+##
+library(nlme)
+priming_model <- lmer(normalized_RTPT ~ fading_factor + (1|DATA$trialnumber) + (1 + fading_factor|DATA$subject), data = DATA)
+
+##############
+##
+## Model Diagnistics
+##
+
+# check residuals for normal distribution
+residuals_priming <- resid(priming_model)
+hist(residuals_priming, n = 40) # nice!
+
+
+###########
+## 
+## Tukey Test
+##
+# for a linear model
+library(lmtest)
+t_test <- coeftest(linear_model)
+
+# for a linear mixed model
+library(multcomp)
+summary(glht(priming_model, linfct=mcp(fading_factor="Tukey")))
+tukey_contrasts <- summary(glht(priming_model, linfct=mcp(fading_factor="Tukey")), test = adjusted(type = "bonferroni"))
+
+
+
+
+###########
+##
+## Confidence Intervals
+##
+##
+CI_linear <- confint(linear_model)
+CI_linear_mixed <- confint(lmm)
+
+
+###############################################################################################################
+##
+##
+## Assuming the data is normally distibuted and a simple linear model would fit the data, continue here!
+##
+##
+###############################################################################################################
 ## transform variables into factors for the ANOVa
 rtPT <- DATA$reactionTime_PT
 rtST <- DATA$reaction_time_ST
@@ -95,78 +164,6 @@ an3 <- anova(linear_model)
 ## provide summary as output
 ## 
 anova_summary <- summary(an1)
-
-############
-## find out that our model is BS and fit a linear mixed model instead
-##
-##
-# We use the lmer function with the familiar formula interface, 
-# but now group level variables are specified using a special syntax:
-#  (1|subject) tells lmer to fit a linear model with a varying-intercept group effect using the variable subject  .
-library(lme4)
-lmm <- lmer(rtPT ~ fading_factor + angle_factor  + sound_factor + (1| DATA$trialnumber ), data=DATA)
-lmm1 <- lmer(rtPT ~ fading_factor + angle_factor + sound_factor + (1|subject_factor) + (1|DATA$trialnumber), data=DATA)
-
-
-###########
-## 
-## Tukey Test
-##
-library(lmtest)
-t_test <- coeftest(linear_model)
-tukey_contrasts <- summary(glht(lmm1, linfct=mcp(fading_factor="Tukey")), test = adjusted(type = "bonferroni"))
-
-
-###########
-##
-## Confidence Intervals
-##
-##
-CI_linear <- confint(linear_model)
-CI_linear_mixed <- confint(lmm)
-
-###########
-##
-## Plot results
-##
-##
-library(arm)
-coefplot(linear_model)
-
-## qq plot for random effects
-library(sjPlot)
-sjp.glmer(lmm1, type = "re.qq")
-
-sjp.glmer(lmm1, 
-          facet.grid = FALSE, 
-          sort = "sort.all")
-
-# plot probability curves for each covariate
-# grouped by random intercepts
-sjp.glmer(lmm1,
-          type = "ri.pc",
-          facet.grid = FALSE)
-
-## plot random effects
-sjp.lmer(lmm)
-
-sjp.glmer(lmm,
-          type = "ri.pc",
-          show.se = TRUE)
-
-
-###########
-##
-## Find a model using the AIC!
-##
-library(stats4)
-fitted_model <- step(linear_model)
-
-## plot
-coefplot(fitted_model)
-t_test1 <- coeftest(fitted_model)
-
-
 ##
 ## also save results in file
 ##
@@ -187,4 +184,56 @@ effect_size_reaction_time <- cohensD(mean_rt_ST, mean_rt_PT)
 effect_size_correct_incorrect <- cohensD(mean_RT_PT_when_incorrect, mean_RT_PT_when_correct)
 effect_size_sound <- cohensD(mean_rt_ST_with_sound, mean_rt_PT_with_sound)
 
+###############################################################################################################
+##
+##
+## Assuming the data is normally distibuted and a linear mixed model fits the data, continue here!
+##
+##
+###############################################################################################################
+
+############
+##
+## find out that our model is BS and fit a linear mixed model instead
+##
+
+library(lme4)
+lmm <- lmer(rtPT ~ fading_factor + angle_factor +  sound_factor + (1| DATA$trialnumber ), data=DATA)
+lmm1 <- lmer(rtPT ~ fading_factor + angle_factor + sound_factor + (1|subject_factor) + (1|DATA$trialnumber), data=DATA)
+
+
+##########
+##
+## some plots
+##
+library(arm)
+coefplot(linear_model)
+
+## qq plot for random effects
+library(sjPlot)
+sjp.glmer(GHQ, type = "re.qq")
+
+sjp.glmer(GHQ, 
+          facet.grid = FALSE, 
+          sort = "sort.all")
+
+# plot probability curves for each covariate
+# grouped by random intercepts
+sjp.glmer(lmm1,
+          type = "ri.pc",
+          facet.grid = FALSE)
+
+## plot random effects
+sjp.lmer(GHQ)
+
+sjp.glmer(lmm,
+          type = "ri.pc",
+          show.se = TRUE)
+
+
+###############
+##
+## CI plot
+##
+plot(lsmeans(priming_model))
 

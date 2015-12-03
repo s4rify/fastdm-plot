@@ -81,6 +81,11 @@ mean_RT_PT_without_sound_only <- vector(mode = "numeric", length = length(all_fi
 
 
 
+##############
+## 
+## a vector that stores the differences as absolute values of the reaction times
+differences <- vector(mode = 'numeric', length = length(all_files))
+
 ########################################################################################
 #
 # prepare data for plots
@@ -117,6 +122,10 @@ for (i in seq_along(all_files)) {
   is_secondary_task <- data[[i]]$reaction_time_ST == 0
   mean_RT_PT_with_sound_only[i] <- mean(data[[i]]$reactionTime_PT[!is_secondary_task & has_sound])
   mean_RT_PT_without_sound_only[i] <- mean(data[[i]]$reactionTime_PT[!is_secondary_task & !has_sound])
+  
+  
+  # difference of response times 
+  differences[i] <- abs(mean(data[[i]]$reactionTime_PT) - mean(data[[i]]$reaction_time_ST))
 }
 
 
