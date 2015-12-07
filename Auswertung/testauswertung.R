@@ -27,7 +27,7 @@ for (i in seq_along(all_files)) {
 #
 ########################################################################################
 ###############
-## AA vector that stores the numer of trials in which a timeout occured.
+## A vector that stores the numer of trials in which a timeout occured.
 ##
 sum_timeouts <- vector(mode = 'numeric', length = length(all_files))
 
@@ -65,11 +65,37 @@ DATA <- rbind.fill(data)
 timeout_rate <- (total_timeouts / 5067) *100
 error_rate <- (length(which(DATA$correct==0)) / 5067) *100
 
+## look at data frame, describe() gives a nice summary
+library(psych)
+describe(DATA)
+
 ########################################################################################
 #
 # Analysis
 #
 ########################################################################################
+## transform variables into factors for the ANOVa
+rtPT <- DATA$reactionTime_PT
+rtST <- DATA$reaction_time_ST
+corr <- DATA$correct
+
+fading_factor <- factor(DATA$fading_function) 
+angle_factor <- factor (DATA$LEDangle)
+levels(angle_factor) <- c("periphery", "no_light", "central", "periphery")
+# angle is only looked at with two possibilities IF light was presented: central and periphery
+sound_factor <- factor(DATA$sound)
+# subject must be a factor for a within subject anova
+subject_factor <- factor(DATA$subject)
+# ST fading factor
+valid_fading_factor <- DATA$fading_function[rt_ST_valid]
+fading_factor_ST <- factor(valid_fading_factor)
+# ST trialnumbers
+valid_trialnumbers <- DATA$trialnumber[rt_ST_valid]
+trialnumber_ST <- factor(valid_trialnumbers)
+# ST subject 
+valid_subjects <- DATA$subject[rt_ST_valid]
+
+
 
 ## check for normal distribution of response variable
 library(car)
@@ -87,7 +113,19 @@ qqnorm(normalized_RTPT) # nice!
 ## right handed side: random effects (slope | intercept)
 ##
 library(nlme)
+library(lme4)
 priming_model <- lmer(normalized_RTPT ~ fading_factor + (1|DATA$trialnumber) + (1 + fading_factor|DATA$subject), data = DATA)
+priming_model_ST <- lmer(rt_ST_valid ~ fading_factor_ST + (1|valid_trialnumbers) + (1 + valid_fading_factor | valid_subjects), data = DATA)
+
+###########
+##
+## A logistic regression for the binary response variable correctness
+## 
+logit_regression <-  glm(DATA$correct ~ fading_factor + angle_factor + sound_factor, data = DATA, family = "binomial")
+summary(logit_regression)
+results$logistic_regression <- summary(logit_regression)
+
+
 
 ##############
 ##
@@ -95,9 +133,11 @@ priming_model <- lmer(normalized_RTPT ~ fading_factor + (1|DATA$trialnumber) + (
 ##
 
 # check residuals for normal distribution
-residuals_priming <- resid(priming_model)
+residuals_priming_PT <- resid(priming_model)
 hist(residuals_priming, n = 40) # nice!
 
+residuals_priming_ST <- resid(priming_model_ST)
+hist(residuals_priming_ST, n = 40) #nice
 
 ###########
 ## 
@@ -110,19 +150,28 @@ t_test <- coeftest(linear_model)
 # for a linear mixed model
 library(multcomp)
 summary(glht(priming_model, linfct=mcp(fading_factor="Tukey")))
-tukey_contrasts <- summary(glht(priming_model, linfct=mcp(fading_factor="Tukey")), test = adjusted(type = "bonferroni"))
-
-
+results$tukey <- summary(glht(priming_model, linfct=mcp(fading_factor="Tukey")), test = adjusted(type = "bonferroni"))
 
 
 ###########
 ##
-## Confidence Intervals
+## Friedmann Test
 ##
-##
-CI_linear <- confint(linear_model)
-CI_linear_mixed <- confint(lmm)
+results = NULL
+friedmandata <- data.frame(normalized_RTPT, fading_factor, DATA$trialnumber)
+results$friedman <- friedman.test(normalized_RTPT ~ fading_factor| trialnumber, data = friedmandata )
+## results in an error: An unreplicated complete block design has 
+# exactly 1 observation for each combination of the two grouping factors. The above clearly has 2 observations with "HC, Sad". So Friedman's test does not apply.
 
+###########
+##
+## Non-paramteric Tests
+##
+# Wilcoxon
+results$wilcoxon <- wilcox.test(norm_rt_numeric, DATA$fading_function) # where y and x are numeric
+
+# Kruskal Wallis Test One Way Anova by Ranks 
+results$kruskal_wallis <- kruskal.test(norm_rt_numeric~fading_factor) # where y1 is numeric and A is a factor
 
 ###############################################################################################################
 ##
@@ -131,48 +180,6 @@ CI_linear_mixed <- confint(lmm)
 ##
 ##
 ###############################################################################################################
-## transform variables into factors for the ANOVa
-rtPT <- DATA$reactionTime_PT
-rtST <- DATA$reaction_time_ST
-corr <- DATA$correct
-
-fading_factor <- factor(DATA$fading_function) 
-angle_factor <- factor (DATA$LEDangle)
-levels(angle_factor) <- c("periphery", "no_light", "central", "periphery")
-# angle is only looked at with two possibilities IF light was presented: central and periphery
-sound_factor <- factor(DATA$sound)
-# subject must be a factor for a within subject anova
-subject_factor <- factor(DATA$subject)
-
-#############
-##
-## estimate a simple linear model
-##
-library(arm)
-linear_model <- lm( rtPT ~  fading_factor*angle_factor*sound_factor)
-coef(linear_model)
-
-############
-## ANOVA 
-## three way within subject anova
-## appearently this model is not appripriate bc we get "Error() is singular" warning. So we need a another model
-an1 <- aov(   rtPT ~  fading_factor*angle_factor*sound_factor + Error(DATA$subject/(fading_factor*angle_factor*sound_factor))   )
-an3 <- anova(linear_model)
-
-############
-##
-## provide summary as output
-## 
-anova_summary <- summary(an1)
-##
-## also save results in file
-##
-capture.output(summary_an1, file = file.path(anova_output_path, "summary_RT_PT.txt"))
-capture.output(summary_an2, file = file.path(anova_output_path, "summary_RT_ST.txt"))
-capture.output(summary_an3, file = file.path(anova_output_path, "summary_corr.txt"))
-capture.output(an1, file = file.path(anova_output_path, "anova_RT_PT.txt"))
-capture.output(an2, file = file.path(anova_output_path, "anova_RT_ST.txt"))
-capture.output(an3, file = file.path(anova_output_path, "anova_corr.txt"))
 
 ###################
 ##
@@ -188,18 +195,17 @@ effect_size_sound <- cohensD(mean_rt_ST_with_sound, mean_rt_PT_with_sound)
 ##
 ##
 ## Assuming the data is normally distibuted and a linear mixed model fits the data, continue here!
+## Or: work with normalized data (log transform)
 ##
 ##
 ###############################################################################################################
+simple_lm_model <- lm(normalized_RTPT ~ fading_factor * angle_factor, data = DATA)
+results$simple_lm_model <- summary(simple_lm_model)
+hist(resid(simple_lm_model), n =100) # naja
 
-############
-##
-## find out that our model is BS and fit a linear mixed model instead
-##
+coef(simple_lm_model)
+results$anova_simple_lm_model <- aov(simple_lm_model)
 
-library(lme4)
-lmm <- lmer(rtPT ~ fading_factor + angle_factor +  sound_factor + (1| DATA$trialnumber ), data=DATA)
-lmm1 <- lmer(rtPT ~ fading_factor + angle_factor + sound_factor + (1|subject_factor) + (1|DATA$trialnumber), data=DATA)
 
 
 ##########
@@ -207,33 +213,37 @@ lmm1 <- lmer(rtPT ~ fading_factor + angle_factor + sound_factor + (1|subject_fac
 ## some plots
 ##
 library(arm)
-coefplot(linear_model)
+coefplot(simple_lm_model)
 
 ## qq plot for random effects
 library(sjPlot)
-sjp.glmer(GHQ, type = "re.qq")
+sjp.glmer(simple_lm_model, type = "re.qq")
 
-sjp.glmer(GHQ, 
+sjp.glmer(priming_model, 
           facet.grid = FALSE, 
           sort = "sort.all")
 
 # plot probability curves for each covariate
 # grouped by random intercepts
-sjp.glmer(lmm1,
+sjp.glmer(simple_lm_model,
           type = "ri.pc",
           facet.grid = FALSE)
 
 ## plot random effects
 sjp.lmer(GHQ)
 
-sjp.glmer(lmm,
+sjp.glmer(priming_model,
           type = "ri.pc",
           show.se = TRUE)
 
 
 ###############
 ##
-## CI plot
+## Dynamite Plot: means plus error bars
 ##
-plot(lsmeans(priming_model))
+library(sciplot)
+bp <-with(data=DATA, bargraph.CI(x.factor=DATA$subject, group=fading_factor, response=normalized_RTPT,
+                                                              lc=FALSE, xlab="Subjects",
+                                                              legend=TRUE, x.leg=3.3, cex.leg=1.3, cex.names=1.5, cex.lab = 1.5,
+                                                              ci.fun=function(x) {c(mean(x) - 1.96*se(x), mean(x) + 1.96*se(x))}))
 
