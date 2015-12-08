@@ -1,28 +1,94 @@
 ---
-title: "AnalysisSummaryOFFIS"
+title: "Analysis Summary"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, fig.width=6, fig.height=4, dpi=100,warning=FALSE, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+## Raw data
+```{r DATA, include=TRUE, echo=FALSE, cache = TRUE}
+#library(psych)
+filepath = "/home/sarah/rprojects/vars/"
+load(paste(filepath, "DATA", sep="/"))
+str(DATA)
 ```
 
-## Including Plots
+## Check for distribution of reaction times
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r qqplot, include=TRUE, echo=FALSE,cache=TRUE}
+library(car)
+#qqnorm(DATA$reactionTime_PT)
+qqp(DATA$reactionTime_PT, "norm")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Normalization fo further processing 
+
+```{r qqplotnorm, include=TRUE, echo=TRUE,cache=TRUE}
+normalized_RTPT <- log(DATA$reactionTime_PT)
+qqp(normalized_RTPT, "norm")
+```
+
+
+## Linear mixed model for reaction time to primary task 
+```{r priming model, include=TRUE, echo=FALSE,cache=TRUE, size='small'}
+load(paste(filepath, "primingmodel", sep="/"))
+summary(priming_model)
+
+```
+
+## Linear mixed model for reaction time to second task
+```{r priming model ST, include=TRUE, echo=FALSE,cache=TRUE, size='small'}
+load(paste(filepath, "primingmodelST", sep="/"))
+summary(priming_model_ST)
+
+```
+
+## Simple linear model on normalized data as a comparison
+```{r simple lm, include=TRUE, echo=FALSE,cache=TRUE, size='small'}
+load(paste(filepath, "simplelm", sep="/"))
+summary(simple_lm_model)
+
+```
+
+
+## Anova results with linear mixed model for RTPT
+```{r priming model anova, include=TRUE, echo=FALSE,cache=TRUE}
+load(paste(filepath, "results", sep="/"))
+results$anova
+```
+
+## Test results Wilcoxon
+```{r priming model wilcoxon, include=TRUE, echo=FALSE,cache=TRUE}
+results$wilcoxon
+```
+
+## Test results Kurskal Wallis
+```{r priming model kurskal, include=TRUE, echo=FALSE,cache=TRUE}
+results$kurskal_wallis
+```
+
+## ANOVA simple linear model
+```{r anova simple lm, include=TRUE, echo=FALSE,cache=TRUE}
+results$anova_simple_lm_model
+```
+
+## Model Diagnostics
+```{r priming model resids, include=TRUE, echo=FALSE,cache=TRUE}
+hist(resid(priming_model), n= 60, main="Residuals of linear mixed model of reaction times to PT")
+```    
+
+```{r priming model resids ST, include=TRUE, echo=FALSE,cache=TRUE}
+hist(resid(priming_model_ST), n= 60, main="Residuals of linear mixed model of reaction times to ST")
+```   
+
+```{r simple lm resids, include=TRUE, echo=FALSE,cache=TRUE}
+hist(resid(simple_lm_model), n= 60, main="Residuals of simple linear model to normalized RT PT")
+```   
+
+
+* means
+* dynamite plots
+* reaction times
+* EVERYTHING

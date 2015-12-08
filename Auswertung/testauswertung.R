@@ -31,8 +31,14 @@ for (i in seq_along(all_files)) {
 ##
 sum_timeouts <- vector(mode = 'numeric', length = length(all_files))
 
+##########
+## A vector that stores the error rates per subject
+##
+subj_error_rates <- vector(mode = "numeric", length = length(all_files))
+
 
 for (i in seq_along(all_files)) {
+  
   # remove all NaN values
   lines_to_rem <- which(grepl(NaN, data[[i]]$correct))
   if (length(lines_to_rem) != 0){
@@ -47,6 +53,10 @@ for (i in seq_along(all_files)) {
   # add trialidentifier to data
   data[[i]]$trialnumber <-seq.int(nrow(data[[i]]))
   
+  # length of data
+  lengthdata <- dim(data[[i]])[1] # ~ 280
+  # calculate error rate per subject
+  subj_error_rates[i] <- length(which(data[[i]]$correct == 0))/ lengthdata *100
 
 }
 
@@ -56,14 +66,13 @@ total_timeouts <- sum(sum_timeouts)
 ## merge all datasets together into one dataframe for the analysis
 library(plyr)
 DATA <- rbind.fill(data)
-
-
+lengthDATA <- dim(DATA)[1] #5067
 ########
 ##
 ## Data Set diagnostics
 ##
-timeout_rate <- (total_timeouts / 5067) *100
-error_rate <- (length(which(DATA$correct==0)) / 5067) *100
+timeout_rate <- (total_timeouts / lengthDATA) *100
+error_rate <- (length(which(DATA$correct==0)) / lengthDATA) *100
 
 ## look at data frame, describe() gives a nice summary
 library(psych)
@@ -163,6 +172,13 @@ results$friedman <- friedman.test(normalized_RTPT ~ fading_factor| trialnumber, 
 ## results in an error: An unreplicated complete block design has 
 # exactly 1 observation for each combination of the two grouping factors. The above clearly has 2 observations with "HC, Sad". So Friedman's test does not apply.
 
+
+###########
+##
+## T-test
+## 
+results$t_test_sound <- t.test(normalized_RTPT ~ sound_factor)
+
 ###########
 ##
 ## Non-paramteric Tests
@@ -172,14 +188,6 @@ results$wilcoxon <- wilcox.test(norm_rt_numeric, DATA$fading_function) # where y
 
 # Kruskal Wallis Test One Way Anova by Ranks 
 results$kruskal_wallis <- kruskal.test(norm_rt_numeric~fading_factor) # where y1 is numeric and A is a factor
-
-###############################################################################################################
-##
-##
-## Assuming the data is normally distibuted and a simple linear model would fit the data, continue here!
-##
-##
-###############################################################################################################
 
 ###################
 ##
@@ -246,4 +254,5 @@ bp <-with(data=DATA, bargraph.CI(x.factor=DATA$subject, group=fading_factor, res
                                                               lc=FALSE, xlab="Subjects",
                                                               legend=TRUE, x.leg=3.3, cex.leg=1.3, cex.names=1.5, cex.lab = 1.5,
                                                               ci.fun=function(x) {c(mean(x) - 1.96*se(x), mean(x) + 1.96*se(x))}))
+save(bp, file = paste(filepath, "dynamiteplot", sep="/"))
 
