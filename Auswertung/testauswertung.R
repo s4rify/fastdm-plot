@@ -78,6 +78,94 @@ error_rate <- (length(which(DATA$correct==0)) / lengthDATA) *100
 library(psych)
 describe(DATA)
 
+
+##########################
+##
+## TODOs 
+##
+##
+soundidx_withsound <- which(DATA$sound == 0)
+soundidx_nosound <- which(DATA$sound == -99999) 
+
+
+fadingidx_800 <- which(DATA$fading_function == 800)
+fadingidx_0 <- which(DATA$fading_function == 0)
+fadingidx_nolight <- which(DATA$fading_function == -1)
+
+angleidx_nolight <- which(DATA$LEDangle == -1)
+angleidx_rightside <- which(DATA$LEDangle == 45)
+angleidx_leftside <- which(DATA$LEDangle == -45)
+angleidx_central <- which(DATA$LEDangle == 0)
+
+## Deskriptive Daten (Durchschnitt, StAbw., Median und Quartile) 
+DATA[soundidx_nosound, ]$reactionTime_PT #reaction_time_ST, correct
+DATA[soundidx_withsound, ]$reactionTime_PT #reaction_time_ST correct
+DATA[fadingidx_nolight, ]$reactionTime_PT #reaction_time_ST correct
+DATA[fadingidx_0, ]$reactionTime_PT #reaction_time_ST correct
+DATA[fadingidx_800, ]$reactionTime_PT #reaction_time_ST correct
+DATA[angleidx_leftside, ]$reactionTime_PT #reaction_time_ST correct
+DATA[angleidx_rightside, ]$reactionTime_PT #reaction_time_ST correct
+DATA[angleidx_nolight, ]$reactionTime_PT #reaction_time_ST correct
+DATA[angleidx_central, ]$reactionTime_PT
+
+## now combine
+# angle = left
+DATA[intersect(intersect(angleidx_leftside, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+DATA[intersect(intersect(angleidx_leftside, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_leftside, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+
+DATA[intersect(intersect(angleidx_leftside, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_leftside, fadingidx_800), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_leftside, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+
+# angle = right
+DATA[intersect(intersect(angleidx_rightside, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+DATA[intersect(intersect(angleidx_rightside, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_rightside, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+
+DATA[intersect(intersect(angleidx_rightside, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_rightside, fadingidx_800), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_rightside, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+
+# angle = no light
+#DATA[intersect(intersect(angleidx_nolight, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_nolight, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+DATA[intersect(intersect(angleidx_nolight, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+
+#DATA[intersect(intersect(angleidx_nolight, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_nolight, fadingidx_800), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+DATA[intersect(intersect(angleidx_nolight, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+
+# angle = central
+DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_central, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+
+DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+#DATA[intersect(intersect(angleidx_central, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ########################################################################################
 #
 # Analysis
@@ -125,7 +213,7 @@ library(nlme)
 library(lme4)
 priming_model <- lmer(normalized_RTPT ~ fading_factor + (1|DATA$trialnumber) + (1 + fading_factor|DATA$subject), data = DATA)
 priming_model_ST <- lmer(rt_ST_valid ~ fading_factor_ST + (1|valid_trialnumbers) + (1 + valid_fading_factor | valid_subjects), data = DATA)
-
+results$priming_model <- summary(priming_model)
 ###########
 ##
 ## A logistic regression for the binary response variable correctness

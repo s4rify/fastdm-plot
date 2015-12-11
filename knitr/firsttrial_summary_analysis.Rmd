@@ -53,26 +53,27 @@ summary(simple_lm_model)
 ```
 
 
-## Anova results with linear mixed model for RTPT
+## Anova results with linear mixed model for RT PT
 ```{r priming model anova, include=TRUE, echo=FALSE,cache=TRUE}
 load(paste(filepath, "results", sep="/"))
 results$anova
-```
-
-## Test results Wilcoxon
-```{r priming model wilcoxon, include=TRUE, echo=FALSE,cache=TRUE}
-results$wilcoxon
-```
-
-## Test results Kurskal Wallis
-```{r priming model kurskal, include=TRUE, echo=FALSE,cache=TRUE}
-results$kurskal_wallis
 ```
 
 ## ANOVA simple linear model
 ```{r anova simple lm, include=TRUE, echo=FALSE,cache=TRUE}
 results$anova_simple_lm_model
 ```
+
+## Test results Wilcoxon with linear mixed model for RT PT
+```{r priming model wilcoxon, include=TRUE, echo=FALSE,cache=TRUE}
+results$wilcoxon
+```
+
+## Test results Kurskal Wallis for linear mixed model RT PT
+```{r priming model kurskal, include=TRUE, echo=FALSE,cache=TRUE}
+results$kurskal_wallis
+```
+
 
 ## Model Diagnostics
 ```{r priming model resids, include=TRUE, echo=FALSE,cache=TRUE}
@@ -87,8 +88,23 @@ hist(resid(priming_model_ST), n= 60, main="Residuals of linear mixed model of re
 hist(resid(simple_lm_model), n= 60, main="Residuals of simple linear model to normalized RT PT")
 ```   
 
+## Plots
+```{r lsmeans summary, include=TRUE, echo=FALSE,cache=TRUE}
+results$lsmeanssummary
+``` 
 
-* means
-* dynamite plots
-* reaction times
-* EVERYTHING
+```{r lsmeans plot, include=TRUE, echo=FALSE,cache=TRUE}
+results$lsmeanplot
+``` 
+
+```{r dynamite plot, include=TRUE, echo=FALSE,cache=TRUE}
+library(sciplot)
+load(paste(filepath, "fading_factor", sep="/"))
+bp <-with(data=DATA, bargraph.CI(x.factor=DATA$subject, group=fading_factor, response=normalized_RTPT,
+                                                              lc=FALSE, xlab="Subjects",
+                                                              legend=TRUE, x.leg=3.3, cex.leg=1.3, cex.names=1.5, cex.lab = 1.5,
+                                                              ci.fun=function(x) {c(mean(x) - 1.96*se(x), mean(x) + 1.96*se(x))}))
+save(bp, file = paste(filepath, "dynamiteplot", sep="/"))
+```
+
+
