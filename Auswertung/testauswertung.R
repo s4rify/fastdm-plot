@@ -78,11 +78,6 @@ library(psych)
 describe(DATA)
 
 
-##########################
-##
-## TODOs 
-##
-##
 soundidx_withsound <- which(DATA$sound == 0)
 soundidx_nosound <- which(DATA$sound == -99999) 
 
@@ -112,38 +107,21 @@ DATA[angleidx_central, ]$reactionTime_PT
 # angle = left
 rtPTleft_fading0_nosound <- DATA[intersect(intersect(angleidx_leftside, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
 rtPTleft_fading800_nosound <- DATA[intersect(intersect(angleidx_leftside, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_leftside, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-
 rtPTleft_fading0_withsound <- DATA[intersect(intersect(angleidx_leftside, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_leftside, fadingidx_800), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_leftside, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
 
 # angle = right
 rtPTright_fading0_nosound <- DATA[intersect(intersect(angleidx_rightside, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
 rtPTright_fading800_nosound <- DATA[intersect(intersect(angleidx_rightside, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_rightside, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-
 rtPTright_fading0_withsound <- DATA[intersect(intersect(angleidx_rightside, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_rightside, fadingidx_800), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_rightside, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
 
 # angle = no light
-#DATA[intersect(intersect(angleidx_nolight, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_nolight, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
 rtPTonly_nosound <- DATA[intersect(intersect(angleidx_nolight, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-
-#DATA[intersect(intersect(angleidx_nolight, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_nolight, fadingidx_800), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
 rtPTonly_withsound <- DATA[intersect(intersect(angleidx_nolight, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-##########################################
+
 # angle = central
 rtPTcentral_fading0_nosound <- DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
 rtPTcentral_fading800_nosound <- DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_central, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-
 rtPTcentral_fading0_withsound <- DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-#combo12 <- DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-#DATA[intersect(intersect(angleidx_central, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
 
 ## for Friedman I also need angle = peripher as a combined group 
 rtPTperipher_fading800_nosound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
@@ -156,8 +134,15 @@ rtPTperipher_fading0_withsound <- DATA[intersect(intersect(angleidx_peripher, fa
 ## Friedmann Test
 ##
 
+# change dataframe to matrix in data bc friedman is a bitch
 # groups = combinations of factors --> eg. combo1: fading=800, angle=left, sound=NO
-# blocks= subjects, expanded on "Durchlauf*4" --> subj1Durchl1.1, subj1Durchl1.2, subj1Durchl1.3, subj1Durchl1.4
+group_CoN <- DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+groupC_800N <- DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+group_C0Y <- DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+groupP_800N <- DATA[intersect(intersect(angleidx_peripher, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+group_P0N <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
+group_P0Y <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+
 #
 # alpha = 0.05
 # df = #groups-1 = 6-1
@@ -167,21 +152,10 @@ rtPTperipher_fading0_withsound <- DATA[intersect(intersect(angleidx_peripher, fa
 # => Reject H0 if ChiSquared > 1,145
 
 ## Friedman for reaction time on PT
-friedman_groups <- matrix(c(rtPTperipher_fading0_withsound[1:278], rtPTperipher_fading0_nosound[1:278], rtPTperipher_fading800_nosound[1:278],
-                            rtPTcentral_fading0_withsound[1:278], rtPTcentral_fading800_nosound[1:278], rtPTcentral_fading0_nosound[1:278]), 
-                            nrow = 278,
-                            ncol = 6)
-friedman_blocks <- matrix(c(1:278), nrow=278, ncol=1)
-friedman_y <- data[[1]]$reactionTime_PT[1:278]
-results$friedman_rtPT <- NULL
-results$friedman_rtPT <- friedman.test(friedman_y, friedman_groups, friedman_blocks ) # all groups does not work, it can only handle 1
-results$friedman_rtPT <- friedman.test(friedman_y, rtPTperipher_fading0_nosound[1:278], friedman_blocks) # error: not an unreplicated block design
-                                                                                                        # which is true bc. every subject saw every combo 4 times in each repition of the exp
-
+friedman_input <- cbind(group_P0Y[1:280], group_P0N[1:280], groupP_800N[1:280], group_C0Y[1:280], groupC_800N[1:280], group_CoN[1:280])
+friedman.test(friedman_input)
 ## Friedman for reaction time on ST
 
-
-## Friedman for correct => Cochran's Q Test
 
 
 #######
@@ -192,6 +166,16 @@ rankedPT <- rank(DATA$reactionTime_PT)
 ranked_priming_model <- lmer(rankedPT ~ fading_factor + (1|DATA$trialnumber) + (1 + fading_factor|DATA$subject), data = DATA)
 results$rankedAnova <- anova(ranked_priming_model)
 
+results$simple_ranked_anova <- aov(rankedPT ~ fading_factor + angle_factor + sound_factor)
+
+
+#########
+##
+## Cochran's Q Test
+##
+##
+library(coin)
+symmetry_test(DATA$correct ~ fading_factor , data = DATA, teststat = "quad")
 
 
 ########################################################################################
@@ -207,6 +191,7 @@ corr <- DATA$correct
 fading_factor <- factor(DATA$fading_function) 
 angle_factor <- factor (DATA$LEDangle)
 levels(angle_factor) <- c("periphery", "no_light", "central", "periphery")
+trial_factor <- factor(DATA$trialnumber)
 # angle is only looked at with two possibilities IF light was presented: central and periphery
 sound_factor <- factor(DATA$sound)
 # subject must be a factor for a within subject anova
