@@ -12,8 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r descriptions, echo=FALSE, eval=TRUE, include=FALSE}
-options(width=120)
-filepath = "/home/sarah/rprojects/vars/"
+setwd("~/Master/WS15-16/HiwiJobAndreas/rprojects")
+filepath = "./vars/"
 load(paste(filepath, "DATA", sep="/"))
 str(DATA)
 library(psych)
@@ -26,6 +26,18 @@ angleidx_nolight <- which(DATA$LEDangle == -1)
 angleidx_rightside <- which(DATA$LEDangle == 45)
 angleidx_leftside <- which(DATA$LEDangle == -45)
 angleidx_central <- which(DATA$LEDangle == 0)
+
+rtPT <- DATA$reactionTime_PT
+rtST <- DATA$reaction_time_ST
+corr <- DATA$correct
+
+fading_factor <- factor(DATA$fading_function) 
+angle_factor <- factor (DATA$LEDangle)
+levels(angle_factor) <- c("periphery", "no_light", "central", "periphery")
+# angle is only looked at with two possibilities IF light was presented: central and periphery
+sound_factor <- factor(DATA$sound)
+# subject must be a factor for a within subject anova
+subject_factor <- factor(DATA$subject)
 
 ```
 
@@ -121,6 +133,50 @@ summary(DATA[angleidx_rightside, ]$reaction_time_ST) #reaction_time_ST correct
 describe(DATA[angleidx_rightside, ]$reaction_time_ST) #reaction_time_ST correct
 ```
 
+# Correct
+## No Sound
+```{r outputc8, echo=FALSE, include=TRUE, eval=TRUE, collapse=TRUE}
+summary(DATA[soundidx_nosound, ]$correct) #reaction_time_ST, correct
+describe(DATA[soundidx_nosound, ]$correct) #reaction_time_ST, correct
+```
+
+## With Sound
+```{r outputc9, echo=FALSE, include=TRUE, eval=TRUE, collapse=TRUE}
+summary(DATA[soundidx_withsound, ]$correct) #reaction_time_ST correct)
+describe(DATA[soundidx_withsound, ]$correct) #reaction_time_ST correct)
+```
+
+## No Light
+```{r outputc10, echo=FALSE, include=TRUE, eval=TRUE, collapse=TRUE}
+summary(DATA[fadingidx_nolight, ]$correct)
+describe(DATA[fadingidx_nolight, ]$correct)
+```
+
+## No Fading
+```{r outputc11, echo=FALSE, include=TRUE, eval=TRUE, collapse=TRUE}
+summary(DATA[fadingidx_0, ]$correct) #reaction_time_ST correct
+describe(DATA[fadingidx_0, ]$correct) 
+```
+
+## Fading = 800
+```{r outputc12, echo=FALSE, include=TRUE, eval=TRUE, collapse=TRUE}
+summary(DATA[fadingidx_800, ]$correct) #reaction_time_ST correct
+describe(DATA[fadingidx_800, ]$correct) #reaction_time_ST correct
+```
+
+## LED left
+```{r outputc13, echo=FALSE, include=TRUE, eval=TRUE, collapse=TRUE}
+summary(DATA[angleidx_leftside, ]$correct) #reaction_time_ST correct
+describe(DATA[angleidx_leftside, ]$correct) #reaction_time_ST correct
+```
+
+## LED right
+```{r outputc14, echo=FALSE, include=TRUE, eval=TRUE, collapse=TRUE}
+summary(DATA[angleidx_rightside, ]$correct) #reaction_time_ST correct
+describe(DATA[angleidx_rightside, ]$correct) #reaction_time_ST correct
+````
+
+
 # Combined RT PT
 
 ## Angle left, fading = 0, no sound
@@ -184,7 +240,9 @@ describe(DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_nosou
 summary(DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_nosound), ]$reactionTime_PT) #reaction_time_ST correct
 describe(DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_nosound), ]$reactionTime_PT) #reaction_time_ST correct
 ```
+```{r periphe, echo=FALSE, include=TRUE, eval=TRUE, collapse=TRUE}
 
+```
 
 # RT ST
 
@@ -314,40 +372,42 @@ summary(DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_noso
 describe(DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_nosound), ]$correct) #reaction_time_ST correct
 ```
 
-```{r misc, echo=TRUE, include=TRUE, eval=FALSE}
+
+## Combined peripher angle
+
+```{r misc, echo=15:23, include=TRUE, eval=TRUE}
+setwd("~/Master/WS15-16/HiwiJobAndreas/rprojects")
+filepath = "./vars/"
 load(paste(filepath, "results", sep="/"))
 angleidx_peripher <- union(angleidx_leftside, angleidx_rightside) # for friedman
 fading_factor <- factor(DATA$fading_function) 
-
-## Change the shit
-# angle = left
-rtPTleft_fading0_nosound <- DATA[intersect(intersect(angleidx_leftside, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-rtPTleft_fading800_nosound <- DATA[intersect(intersect(angleidx_leftside, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-
-rtPTleft_fading0_withsound <- DATA[intersect(intersect(angleidx_leftside, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-
-# angle = right
-rtPTright_fading0_nosound <- DATA[intersect(intersect(angleidx_rightside, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-rtPTright_fading800_nosound <- DATA[intersect(intersect(angleidx_rightside, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-
-rtPTright_fading0_withsound <- DATA[intersect(intersect(angleidx_rightside, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-
-# angle = no light
-rtPTonly_nosound <- DATA[intersect(intersect(angleidx_nolight, fadingidx_nolight), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-
-rtPTonly_withsound <- DATA[intersect(intersect(angleidx_nolight, fadingidx_nolight), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-
-# angle = central
-rtPTcentral_fading0_nosound <- DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-rtPTcentral_fading800_nosound <- DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-
-rtPTcentral_fading0_withsound <- DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
-
-## for Friedman I also need angle = peripher as a combined group 
 rtPTperipher_fading800_nosound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_800), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-rtPTperipher_fading0_nosound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_nosound), ]$reactionTime_PT #reaction_time_ST correct
-rtPTperipher_fading0_withsound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_withsound), ]$reactionTime_PT #reaction_time_ST correct
+rtPTperipher_fading0_nosound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_nosound), ]$reactionTime_PT#eaction_time_ST correct
+rtPTperipher_fading0_withsound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_withsound), ]$reactionTime_PT
 
+rtSTperipher_fading800_nosound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_800), soundidx_nosound), ]$reactionTime_ST #reaction_time_ST correct
+rtSTperipher_fading0_nosound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_nosound), ]$reactionTime_ST#eaction_time_ST correct
+rtSTperipher_fading0_withsound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_withsound), ]$reactionTime_ST
+
+correctperipher_fading800_nosound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_800), soundidx_nosound), ]$correct #reaction_time_ST correct
+correctperipher_fading0_nosound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_nosound), ]$correct#eaction_time_ST correct
+correctperipher_fading0_withsound <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_withsound), ]$correct
+
+summary(rtPTperipher_fading0_withsound)
+summary(rtPTperipher_fading0_withsound)
+summary(rtPTperipher_fading800_nosound)
+summary(correctperipher_fading0_withsound)
+summary(correctperipher_fading0_nosound)
+summary(correctperipher_fading800_nosound)
+
+#summary(rtSTperipher_fading0_withsound)
+#summary(rtSTperipher_fading0_nosound)
+#summary(rtSTperipher_fading800_nosound)
+
+```
+
+
+```{r rankedanova}
 
 #######
 ##
@@ -361,4 +421,21 @@ results$rankedAnova <- anova(ranked_priming_model)
 describe(results$rankedAnova)
 
 summary(aov(rankedPT ~ fading_factor + angle_factor + sound_factor))
+
+# Kruskal Wallis Test One Way Anova by Ranks 
+normalized_RTPT <- log(DATA$reactionTime_PT)
+kruskal.test(normalized_RTPT~fading_factor) # where y1 is numeric and A is a factor
+
+#	Friedman rank sum test
+group_CoN <- DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_nosound), ]$reactionTime_PT
+groupC_800N <- DATA[intersect(intersect(angleidx_central, fadingidx_800), soundidx_nosound), ]$reactionTime_PT 
+group_C0Y <- DATA[intersect(intersect(angleidx_central, fadingidx_0), soundidx_withsound), ]$reactionTime_PT
+groupP_800N <- DATA[intersect(intersect(angleidx_peripher, fadingidx_800), soundidx_nosound), ]$reactionTime_PT 
+group_P0N <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_nosound), ]$reactionTime_PT 
+group_P0Y <- DATA[intersect(intersect(angleidx_peripher, fadingidx_0), soundidx_withsound), ]$reactionTime_PT
+
+friedman_input <- cbind(group_P0Y[1:280], group_P0N[1:280], groupP_800N[1:280], group_C0Y[1:280], groupC_800N[1:280], group_CoN[1:280])
+friedman.test(friedman_input)
+
+
 ```
