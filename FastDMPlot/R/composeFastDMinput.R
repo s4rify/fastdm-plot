@@ -70,16 +70,18 @@ for (i in 1:length(dat)) {
 # Export the entries from RAWDATA.light and RAWDATA.NOlight into csv files for fast-dm.exe, one
 # csv file per subject.
 
+output.path <- "./FastDMSoftware/"
+
 for(s in 1:length(dat)){
   write.table(RAWDATA.light[[s]],
-            file=paste("subj", s, "LIGHT.csv", sep=""),
+            file=paste(output.path, "subj", s, "LIGHT.csv", sep=""),
             row.names=FALSE,
             col.names = FALSE,
             quote=FALSE,
             sep=" ")
 
   write.table(RAWDATA.NOlight[[s]],
-            file=paste("subj", s, "NOlight.csv", sep=""),
+            file=paste(output.path, "subj", s, "NOlight.csv", sep=""),
             row.names = FALSE,
             quote=FALSE,
             col.names = FALSE,
@@ -90,13 +92,13 @@ for(s in 1:length(dat)){
 for(s in 1:length(dat)){
   # This is the input for the diff model when output seperated by condition is needed.
   write.table(RAWDATA.light800[[s]],
-              file = paste("subj", s, ".800.csv", sep=""),
+              file = paste(output.path, "subj", s, ".800.csv", sep=""),
               row.names = FALSE,
               quote = FALSE,
               col.names = FALSE,
               sep=" ")
   write.table(RAWDATA.light0[[s]],
-              file = paste("subj", s, ".0.csv", sep=""),
+              file = paste(output.path, "subj", s, ".0.csv", sep=""),
               row.names = FALSE,
               quote = FALSE,
               col.names = FALSE,

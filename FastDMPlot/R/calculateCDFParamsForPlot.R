@@ -34,7 +34,7 @@ calculateCDFParamsForPlot <- function(model.cdf){
   DARK <- -1
   LIGHT <- c(0,800)
 
-  for (s in seq_along(model.cdf)){
+  for (s in 1:length(dat)){
     cat("Calculating CDFs for subject", s, "\n")
 
     # model CDF values for correct and false responses for every subject
