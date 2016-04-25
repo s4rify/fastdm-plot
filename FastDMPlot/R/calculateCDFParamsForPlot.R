@@ -15,7 +15,7 @@ calculateCDFParamsForPlot <- function(model.cdf){
   #   No return value, but created objects are being added to the
   #   global environment.
 
-  cat("Working with", length(model.cdf), "subjects.\n")
+  cat("Working with", length(dat), "subjects.\n")
 
   RTcdf_incorr.model <- list()
   RTcdf_corr.model <- list()

@@ -18,6 +18,7 @@ composeCDFparameters <- function(z, t, d, light=TRUE){
   # Returns:
   #   The list which contains the cdf parameters for every subject.
 
+
   if(light){
     fn <- "/light.log"
 
@@ -58,7 +59,7 @@ composeCDFparameters <- function(z, t, d, light=TRUE){
   outputname <- vector(mode="character", length = length(a.param))
 
 
-  for (i in seq_along(1:dim(estimatedParams.diffmodel)[1])){
+  for (i in seq_along(1:length(dat))){
     outputname[i] <- paste(path, "/", i, ".lst", sep = "")
   }
 
@@ -76,7 +77,7 @@ composeCDFparameters <- function(z, t, d, light=TRUE){
   }
 
   lst.list <- list()
-  for (r in seq_along(1:dim(estimatedParams.diffmodel)[1])){
+  for (r in seq_along(1:length(dat))){
     lst.list[[r]] <- read.table(paste(path,"/" ,r, ".lst" , sep=""), header = TRUE)
   }
 

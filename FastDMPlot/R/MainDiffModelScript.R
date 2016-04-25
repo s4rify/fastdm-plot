@@ -39,16 +39,3 @@ composeCDFplot(SUBJ, light=FALSE, correct.responses = FALSE, clearplots = FALSE)
 composeCDFplot(SUBJ, light=TRUE, correct.responses = FALSE, clearplots = FALSE)
 
 
-
-# Use this loop to get an overview of all subjects
-# in one plot, this is mainly useful for adjustments
-# of the parameters.
-par(mfrow=c(3,4))
-for (i in c(1,3,4,5,6,7,9,12,13,14,15,18)){
-  composeCDFplot(i, correct.responses = TRUE, clearplots = FALSE)
-}
-
-
-# notes:
-# the lst files for light and dark ARE indeed different
-# but the plots are the same
