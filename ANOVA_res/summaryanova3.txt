@@ -1,7 +1,0 @@
-                Df Sum Sq Mean Sq F value  Pr(>F)    
-fading_factor    2    6.2  3.0986  17.416 2.9e-08 ***
-angle_factor     2    0.9  0.4664   2.621  0.0728 .  
-sound_factor     1    0.3  0.2924   1.644  0.1999    
-Residuals     5061  900.4  0.1779                    
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
