@@ -13,7 +13,7 @@ composeCDFplot <- function(subject.to.plot,light=TRUE, correct.responses = TRUE,
 
   if(light){
     cond <- "Light"
-    if(correct.responses){  
+    if(correct.responses){
       dataset.model <- RTcdf_corr.model
       dataset.emp.x <- RT_corrLIGHT
       dataset.emp.y <- empirical_cdf_corrLIGHT
@@ -24,7 +24,7 @@ composeCDFplot <- function(subject.to.plot,light=TRUE, correct.responses = TRUE,
     }
   } else{
     cond <- "Dark"
-    if(correct.responses){  
+    if(correct.responses){
       dataset.model <- RTcdf_corr.model
       dataset.emp.x <- RT_corrDARK
       dataset.emp.y <- empirical_cdf_corrDARK
@@ -45,36 +45,36 @@ composeCDFplot <- function(subject.to.plot,light=TRUE, correct.responses = TRUE,
   #  par(mfrow = c(1,1))
     cat("Cleared previous plots and reset plot prefs.\n")
   }
-  
-  correct.rate <- length(data[[n]]$reactionTime_PT[data[[n]]$correct==1]) / dim(data[[n]])[1]
+
+  correct.rate <- length(dat[[n]]$reactionTime_PT[dat[[n]]$correct==1]) / dim(dat[[n]])[1]
 
   model.color <- "lightseagreen"
   emp.color <- "magenta4"
   pch=16 # small solid circle
   par( mar=c(5.1,5.1,4.1,4.1))
-  plot(dataset.model[[n]], 
-       col = model.color, 
+  plot(dataset.model[[n]],
+       col = model.color,
        cex.main = 2.8,
        cex.axis = 2,
        cex.lab = 2,
        bty = 'n',
        type="p",
        pch = pch,
-       xlab="Reaction Time [s]", 
+       xlab="Reaction Time [s]",
        ylab="P",
-       xlim=c(min(dataset.model[[n]]), 2), 
+       xlim=c(min(dataset.model[[n]]), 2),
        main=paste("Light, Incorrect Responses")
        #main=paste("Subject",n, "(Correctness:", ceiling(correct.rate*1000)/10, "%)")
        )
-  points(x = dataset.emp.x[[n]], 
-         y = dataset.emp.y[[n]](dataset.emp.x[[n]]), 
-         pch = pch, 
+  points(x = dataset.emp.x[[n]],
+         y = dataset.emp.y[[n]](dataset.emp.x[[n]]),
+         pch = pch,
          col = emp.color)
-  legend("bottomright", 
-         legend=c("Model    ", "Empirical    ") , 
-        # lty=1, 
-         col=c(model.color, emp.color), 
-         #bty="o", 
+  legend("bottomright",
+         legend=c("Model    ", "Empirical    ") ,
+        # lty=1,
+         col=c(model.color, emp.color),
+         #bty="o",
          lwd=2,
          cex = 1.3,
          text.col = "black",
