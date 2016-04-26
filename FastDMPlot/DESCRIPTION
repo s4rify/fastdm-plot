@@ -3,7 +3,6 @@ Type: Package
 Title: Plot Fast-DM output
 Version: 0.1.0
 Authors@R: person("Sarah", "Blum", email ="sarah.blum@uni-oldenburg.de", role = c("aut", "cre"))
-Maintainer: Sarah Blum
 Description: More about what it does (maybe more than one line)
-License: CCO
+License: CC0
 LazyData: true
