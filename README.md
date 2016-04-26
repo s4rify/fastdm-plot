@@ -12,7 +12,6 @@ Type the following to directly in the R console to install the package:
 ```
 install.packages("devtools")
 devtools::install_github("s4rify/fastdm-plot", subdir = "FastDMPlot")
-library(AnomalyDetection)
 ```
 
 
